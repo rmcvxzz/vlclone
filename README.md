@@ -4,6 +4,14 @@ Somewhat working self-hosted streaming service using Node.js
 This is considered as a coding practice.
 ![ze paige](./something/PAIGE!!!!.png)
 ![ze paige](./something/PAIGE!!!!2.png)
+
+# What are the features?
+vlclone currently has:
+- Multimedia support (1.0)
+- Search bar to find files
+- 8 Second `/media` auto-refresh
+- Console-like logs
+
 # Running the software as a whole
 ## Dependencies
 - Node.js (v24.15)
@@ -30,7 +38,6 @@ Supported medias (as of 04/18/2026:):
 - .jpeg
 - .gif
 - .webp
-- 
 ## Compiling
 Here's the fun part. You dont use `node`. Instead, you use `npm run stream`.
 It's a pre-added script on package.json to make it easy to compile.

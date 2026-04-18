@@ -1,0 +1,90 @@
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #121212; 
+    color: #e0e0e0; 
+    margin: 0; 
+    padding: 20px; 
+}
+
+h1 { color: #00d1ff; margin-bottom: 10px; }
+
+#viewer-container { 
+    margin: 20px auto; 
+    max-width: 900px; 
+    background: #000; 
+    border-radius: 8px; 
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    position: sticky; /* Keeps player at top */
+    top: 10px;
+    z-index: 100;
+}
+
+video, img { width: 100%; display: none; max-height: 60vh; object-fit: contain; }
+.active-media { display: block; }
+
+#search-container {
+    max-width: 900px;
+    margin: 20px auto;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 25px;
+    border: 1px solid #333;
+    background: #1e1e1e;
+    color: white;
+    outline: none;
+    transition: 0.3s;
+}
+
+#searchInput:focus {
+    border-color: #00d1ff;
+    box-shadow: 0 0 8px rgba(0, 209, 255, 0.3);
+}
+
+#library { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+    gap: 15px; 
+    margin-top: 30px; 
+    padding: 20px;
+}
+
+.file-card { 
+    background: #1e1e1e; 
+    padding: 15px; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: 0.2s;
+    border: 1px solid #333;
+    word-break: break-all;
+    text-align: center;
+}
+
+.file-card:hover { 
+    background: #333; 
+    border-color: #00d1ff; 
+    color: #00d1ff; 
+}
+
+#log-container {
+    max-width: 900px;
+    margin: 10px auto;
+    background: #000;
+    border: 1px solid #333;
+    border-radius: 5px;
+    height: 100px;
+    overflow-y: auto;
+    padding: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    text-align: left;
+}
+
+.log-entry { margin-bottom: 5px; border-left: 3px solid #00d1ff; padding-left: 8px; }
+.log-new { border-color: #00ff88; color: #00ff88; }
+.log-deleted { border-color: #ff4444; color: #ff4444; }
+.log-time { color: #888; margin-right: 8px; }
