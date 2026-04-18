@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vlclone - Media Library</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
+        h1 { color: #00d1ff; }
+        #viewer-container { 
+            margin: 20px auto; 
+            max-width: 900px; 
+            background: #000; 
+            border-radius: 8px; 
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        video, img { width: 100%; display: none; max-height: 70vh; object-fit: contain; }
+        #library { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+            gap: 15px; 
+            margin-top: 30px; 
+            padding: 20px;
+        }
+        .file-card { 
+            background: #1e1e1e; 
+            padding: 15px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            transition: 0.2s;
+            border: 1px solid #333;
+            word-break: break-all;
+        }
+        .file-card:hover { background: #333; border-color: #00d1ff; color: #00d1ff; }
+        .active-media { display: block; }
+    </style>
+</head>
+<body>
+    <center>
+        <h1>vlclone</h1>
+        <div id="viewer-container">
+            <video id="videoPlayer" controls></video>
+            <img id="imageViewer" src="" alt="preview">
+            <h3 id="nowPlaying">Select a file from your media folder</h3>
+        </div>
+    </center>
+
+    <div id="library"></div>
+
+    <script>
+        const videoPlayer = document.getElementById('videoPlayer');
+        const imageViewer = document.getElementById('imageViewer');
+        const library = document.getElementById('library');
+        const nowPlaying = document.getElementById('nowPlaying');
+
+        function playMedia(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext);
+            const streamUrl = `/stream/${encodeURIComponent(filename)}`;
+
+            // Reset views
+            videoPlayer.classList.remove('active-media');
+            videoPlayer.pause();
+            imageViewer.classList.remove('active-media');
+
+            if (isImage) {
+                imageViewer.src = streamUrl;
+                imageViewer.classList.add('active-media');
+            } else {
+                videoPlayer.src = streamUrl;
+                videoPlayer.classList.add('active-media');
+                videoPlayer.play();
+            }
+            nowPlaying.innerText = filename;
+        }
+
+        fetch('/api/files')
+            .then(res => res.json())
+            .then(files => {
+                if(files.length === 0) library.innerHTML = "<p>No files found in /media folder</p>";
+                files.forEach(file => {
+                    const card = document.createElement('div');
+                    card.className = 'file-card';
+                    card.innerText = file;
+                    card.onclick = () => playMedia(file);
+                    library.appendChild(card);
+                });
+            });
+    </script>
+</body>
+</html>
