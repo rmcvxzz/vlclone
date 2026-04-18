@@ -10,7 +10,6 @@ This is considered as a coding practice.
 - NPM (v11.12.1)
 - Express
 - nodemon
-- 
 To install them, simply type `npm install`.
 
 If you're running ***__vlclone__*** on your PC and want to access your files on mobile or other hardwares, type `ipconfig` to your CMD (Windows) and SPECIFICALLY find your Wi-Fi's/LAN's IPV4 address, then copy and paste that to your other hardware's url tab.
