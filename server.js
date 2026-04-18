@@ -8,7 +8,7 @@ const ffmpeg = require('fluent-ffmpeg');
 
 const app = express();
 const PORT = 3000;
-const VER = "1.4.0";
+const VER = "1.4";
 const MEDIA_DIR = path.join(__dirname, 'media');
 const THUMBS_DIR = path.join(__dirname, 'thumbnails');
 const CONVERT_DIR = path.join(__dirname, 'converted');
