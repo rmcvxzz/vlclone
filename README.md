@@ -5,7 +5,7 @@ This is considered as a coding practice.
 ![ze paige](./something/PAIGE!!!!.png)
 ![ze paige](./something/PAIGE!!!!2.png)
 
-(you can view more demos [here](./something)
+(you can view more demos [here](./something))
 # What are the features?
 vlclone has evolved from a simple file lister into a smart media pipeline:
 
