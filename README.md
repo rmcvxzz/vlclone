@@ -12,6 +12,7 @@ This is considered as a coding practice.
 - nodemon
 To install them, simply type `npm install`.
 
+## REMEMBER, YOUR DEVICES MUST CONNECT INTO THE SAME WI-FI TO ACCESS THE FILES!!!
 If you're running ***__vlclone__*** on your PC and want to access your files on mobile or other hardwares, type `ipconfig` to your CMD (Windows) and SPECIFICALLY find your Wi-Fi's/LAN's IPV4 address, then copy and paste that to your other hardware's url tab.
 However, if you're on Linux (like me as of writing this), type `hostname -I` on the Terminal.
 BUT, HOWEVER, if you're on MacOS, type `ipconfig getifaddr en0` (if using Wi-Fi) or `ipconfig getifaddr en0` (if using LAN) on the Terminal.
