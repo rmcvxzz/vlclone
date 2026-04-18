@@ -62,5 +62,7 @@ BUT, HOWEVER, if you're on MacOS, type `ipconfig getifaddr en0` (if using Wi-Fi)
 ***Q: Why node.js?***
 ***A: Simple. It's already a great library to make servers.*** 
 
+***Q: Where did the name come from?***
+***A: vlclone is VLC + Clone + full lowercase. vlclone was originally made to be a vlc clone using node.js.***
 # Getting a bug?
 Report the issue [here.](https://github.com/rmcvxzz/vlclone/issues)

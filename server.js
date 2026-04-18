@@ -7,7 +7,7 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = 3000;
-const VER = 1.1;
+const VER = 1.2;
 const MEDIA_DIR = path.join(__dirname, 'media');
 
 // 1. SECURITY & SPEED MIDDLEWARE
