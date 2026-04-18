@@ -43,7 +43,7 @@ Here's the fun part. You dont use `node`. Instead, you use `npm run stream`.
 It's a pre-added script on package.json to make it easy to compile.
 
 ## Seeing the media
-Simply go to localhost:3000. You can also change the port in `server.js` at line 5:
+Simply go to localhost:3000. You can also change the port in `server.js` at line 9:
 
 ```javascript
 const PORT = 3000; // <- change the port to anything you like (as long as its numbers)
