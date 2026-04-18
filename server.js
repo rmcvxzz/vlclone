@@ -32,14 +32,29 @@ app.get('/stream/:filename', (req, res) => {
     if (!fs.existsSync(filePath)) return res.status(404).send('File not found');
 
     const ext = path.extname(filePath).toLowerCase();
-    const isImage = ['.png', '.jpg', '.jpeg', '.gif', '.webp'].includes(ext);
 
-    if (isImage) {
-        // Images don't need range streaming, just send the file
+    // Map extensions to their correct MIME types
+    const mimeTypes = {
+        '.mp4': 'video/mp4',
+        '.mkv': 'video/x-matroska',
+        '.mov': 'video/quicktime',
+        '.mp3': 'audio/mpeg',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp'
+    };
+
+    // Use the map or fallback to a generic binary stream
+    const contentType = mimeTypes[ext] || 'application/octet-stream';
+
+    // Handle Images
+    if (contentType.startsWith('image/')) {
         return res.sendFile(filePath);
     }
 
-    // Video Streaming Logic (with Range support for seeking)
+    // Video/Audio Streaming Logic (with Range support)
     const stat = fs.statSync(filePath);
     const fileSize = stat.size;
     const range = req.headers.range;
@@ -55,7 +70,7 @@ app.get('/stream/:filename', (req, res) => {
             'Content-Range': `bytes ${start}-${end}/${fileSize}`,
             'Accept-Ranges': 'bytes',
             'Content-Length': chunksize,
-            'Content-Type': 'video/mp4',
+            'Content-Type': contentType,
         };
 
         res.writeHead(206, head);
@@ -63,7 +78,7 @@ app.get('/stream/:filename', (req, res) => {
     } else {
         res.writeHead(200, {
             'Content-Length': fileSize,
-            'Content-Type': 'video/mp4',
+            'Content-Type': contentType,
         });
         fs.createReadStream(filePath).pipe(res);
     }
@@ -71,5 +86,5 @@ app.get('/stream/:filename', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`vlclone is live at http://localhost:${PORT}`);
-    console.log(`Scan the media folder: ${MEDIA_DIR}`);
+    console.log(`scan the media folder : ${MEDIA_DIR}`);
 });
