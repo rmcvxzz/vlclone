@@ -8,145 +8,179 @@ const ffmpeg = require('fluent-ffmpeg');
 
 const app = express();
 const PORT = 3000;
-const VER = 1.3;
+const VER = "1.4.0";
 const MEDIA_DIR = path.join(__dirname, 'media');
 const THUMBS_DIR = path.join(__dirname, 'thumbnails');
+const CONVERT_DIR = path.join(__dirname, 'converted');
 
-// 1. DIRECTORY CHECK: Ensure system is ready
-if (!fs.existsSync(MEDIA_DIR)) fs.mkdirSync(MEDIA_DIR);
-if (!fs.existsSync(THUMBS_DIR)) fs.mkdirSync(THUMBS_DIR);
+// Concurrency Guard: Prevents multiple CPU-heavy tasks for the same file
+const processing = new Set();
 
-// 2. MIDDLEWARE: Security & Performance
-app.use(helmet({ contentSecurityPolicy: false })); // Allow streams
-app.use(compression()); // Gzip for faster API responses
+// Ensure filesystem is ready
+[MEDIA_DIR, THUMBS_DIR, CONVERT_DIR].forEach(dir => {
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+});
 
-// Rate limiter for API routes
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(compression());
+
+// Semantic Rate Limiting (429)
 const limiter = rateLimit({
     windowMs: 1 * 60 * 1000,
-    max: 150, // Slightly higher for thumbnail-heavy galleries
-    message: "403: Unexpected error, please refresh or restart server"
+    max: 150,
+    message: "429: Too many requests, slow down"
 });
 app.use('/api/', limiter);
 
-// Serve static assets
 app.use(express.static('public'));
 app.use('/thumbs', express.static(THUMBS_DIR));
 
 /**
- * THUMBNAIL ENGINE
- * Takes a frame at 1s to create a 16:9 preview
+ * CORE PIPELINE: Thumbnails & Transcoding
  */
-function generateThumbnail(videoFile) {
-    const thumbName = `${videoFile}.jpg`;
+function processVideo(file) {
+    const ext = path.extname(file).toLowerCase();
+    const fileNameNoExt = path.parse(file).name;
+    const thumbName = `${file}.jpg`;
     const thumbPath = path.join(THUMBS_DIR, thumbName);
+    const outputMp4 = path.join(CONVERT_DIR, `${fileNameNoExt}.mp4`);
 
-    // Don't re-process if thumbnail exists
-    if (fs.existsSync(thumbPath)) return;
+    // 1. Thumbnail Generation
+    if (!fs.existsSync(thumbPath)) {
+        ffmpeg(path.join(MEDIA_DIR, file))
+            .screenshots({
+                timestamps: ['00:00:01'],
+                filename: thumbName,
+                folder: THUMBS_DIR,
+                size: '320x180'
+            })
+            .on('error', (err) => console.log(`[FFmpeg] Thumb Error: ${err.message}`));
+    }
 
-    ffmpeg(path.join(MEDIA_DIR, videoFile))
-        .screenshots({
-            timestamps: ['00:00:01'],
-            filename: thumbName,
-            folder: THUMBS_DIR,
-            size: '320x180'
-        })
-        .on('error', (err) => {
-            // Silently log skips (e.g., corrupted files)
-            console.log(`[FFmpeg] Skipped ${videoFile}: ${err.message}`);
-        });
+    // 2. Transcoder with Concurrency Guard
+    if ((ext === '.mov' || ext === '.mkv') && !fs.existsSync(outputMp4) && !processing.has(file)) {
+        console.log(`[Transcoder] Starting: ${file}`);
+        processing.add(file);
+
+        ffmpeg(path.join(MEDIA_DIR, file))
+            .videoCodec('libx264')
+            .audioCodec('aac')
+            .outputOptions('-movflags +faststart')
+            .on('end', () => {
+                console.log(`[Transcoder] Finished: ${fileNameNoExt}.mp4`);
+                processing.delete(file);
+            })
+            .on('error', (err) => {
+                console.log(`[Transcoder] Failed: ${err.message}`);
+                processing.delete(file);
+            })
+            .save(outputMp4);
+    }
 }
 
 /**
- * API: FILE DISCOVERY
+ * API: Structured JSON Response
  */
 app.get('/api/files', (req, res) => {
     fs.readdir(MEDIA_DIR, (err, files) => {
-        if (err) return res.status(403).send('403: Unexpected error');
+        // 500: Directory read error
+        if (err) return res.status(500).send('500: Failed to read media directory');
         
         const mediaFiles = files.filter(file => 
             ['.mp4', '.mkv', '.mp3', '.mov', '.png', '.jpg', '.jpeg', '.gif', '.webp']
             .includes(path.extname(file).toLowerCase())
         );
 
-        // Process thumbnails in the background
-        mediaFiles.forEach(file => {
+        const structuredData = mediaFiles.map(file => {
             const ext = path.extname(file).toLowerCase();
-            if (['.mp4', '.mkv', '.mov'].includes(ext)) {
-                generateThumbnail(file);
-            }
+            const fileNameNoExt = path.parse(file).name;
+            const isVideo = ['.mp4', '.mkv', '.mov'].includes(ext);
+            const optimizedPath = path.join(CONVERT_DIR, `${fileNameNoExt}.mp4`);
+            
+            if (isVideo) processVideo(file);
+
+            return {
+                name: fileNameNoExt,
+                stream: `/stream/${file}`,
+                thumbnail: isVideo ? `/thumbs/${file}.jpg` : null,
+                ready: (ext === '.mp4' || fs.existsSync(optimizedPath))
+            };
         });
 
-        res.json(mediaFiles);
+        res.json(structuredData);
     });
 });
 
 /**
- * STREAMING ENGINE (Mobile Optimized)
+ * STREAMING ENGINE: Safety Checks & Semantic Errors
  */
 app.get('/stream/:filename', (req, res) => {
-    const safeName = path.basename(req.params.filename);
-    const filePath = path.join(MEDIA_DIR, safeName);
+    const originalName = path.basename(req.params.filename);
+    const fileNameNoExt = path.parse(originalName).name;
+    const ext = path.extname(originalName).toLowerCase();
+    
+    const optimizedPath = path.join(CONVERT_DIR, `${fileNameNoExt}.mp4`);
+    const sourcePath = path.join(MEDIA_DIR, originalName);
 
-    if (!fs.existsSync(filePath)) {
-        return res.status(404).send('404: File didn\'t upload successfully, restart server');
+    // 202: Processing Check
+    if ((ext === '.mov' || ext === '.mkv') && !fs.existsSync(optimizedPath)) {
+        return res.status(202).send('202: Video is still processing');
     }
+    
+    // Choose optimized file if available
+    const filePath = (fs.existsSync(optimizedPath) && ext !== '.mp4') ? optimizedPath : sourcePath;
 
-    const ext = path.extname(filePath).toLowerCase();
+    // 404: File Missing
+    if (!fs.existsSync(filePath)) return res.status(404).send('404: File not found');
+
     const mimeTypes = {
         '.mp4': 'video/mp4', '.mkv': 'video/x-matroska', '.mov': 'video/quicktime',
         '.mp3': 'audio/mpeg', '.png': 'image/png', '.jpg': 'image/jpeg',
         '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp'
     };
 
-    if (!mimeTypes[ext]) return res.status(500).send('500: File type is not supported');
-
-    const contentType = mimeTypes[ext];
-
-    // Speed up images with local caching
-    if (contentType.startsWith('image/')) {
-        res.setHeader('Cache-Control', 'public, max-age=86400');
-        return res.sendFile(filePath);
-    }
+    // Safety Net: Use path.extname on the ACTUAL file being served
+    const servedExt = path.extname(filePath).toLowerCase();
+    if (!mimeTypes[servedExt]) return res.status(415).send('415: Unsupported media type');
 
     try {
         const stat = fs.statSync(filePath);
         const fileSize = stat.size;
         const range = req.headers.range;
 
-        // Support for seeking (jumping ahead) - Essential for Android/Chrome
         if (range) {
             const parts = range.replace(/bytes=/, "").split("-");
             const start = parseInt(parts[0], 10);
             const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-            
-            const file = fs.createReadStream(filePath, { start, end });
-            
-            file.on('error', err => {
-                if (!res.headersSent) res.status(403).send('403: Stream error');
-            });
 
+            // 416: Bad Range
+            if (start >= fileSize || end >= fileSize) {
+                return res.status(416).send('416: Requested range not satisfiable');
+            }
+            
             res.writeHead(206, {
                 'Content-Range': `bytes ${start}-${end}/${fileSize}`,
                 'Accept-Ranges': 'bytes',
                 'Content-Length': (end - start) + 1,
-                'Content-Type': contentType,
+                'Content-Type': mimeTypes[servedExt],
             });
-            file.pipe(res);
+            fs.createReadStream(filePath, { start, end }).pipe(res);
         } else {
-            const file = fs.createReadStream(filePath);
             res.writeHead(200, { 
-                'Accept-Ranges': 'bytes', // Hint to browser it can seek
+                'Accept-Ranges': 'bytes',
                 'Content-Length': fileSize, 
-                'Content-Type': contentType 
+                'Content-Type': mimeTypes[servedExt] 
             });
-            file.pipe(res);
+            fs.createReadStream(filePath).pipe(res);
         }
     } catch (e) {
-        res.status(403).send('403: Unexpected error, please refresh or restart server');
+        // 500: Internal server error
+        if (!res.headersSent) res.status(500).send('500: Internal server error');
     }
 });
 
+// Final colorful console readout
 app.listen(PORT, () => {
-    console.log(`\x1b[32m%s\x1b[0m`, `--- vlclone v${VER} ---`); 
+    console.log(`\x1b[32m%s\x1b[0m`, `--- vlclone v${VER} ---`);
     console.log(`serving media at: http://localhost:${PORT}`);
 });

@@ -6,12 +6,26 @@ This is considered as a coding practice.
 ![ze paige](./something/PAIGE!!!!2.png)
 
 # What are the features?
-vlclone currently has:
-- Multimedia support (1.0)
-- Search bar to find files
-- 8 Second `/media` auto-refresh
-- Console-like logs
+vlclone has evolved from a simple file lister into a smart media pipeline:
 
+* **Smart Transcoding Engine (v1.4)**
+    * Automatically detects heavy desktop formats (.mov, .mkv) and optimizes them into mobile-friendly H.264 MP4s in the background.
+    * Uses Fast-Start (moov atom) optimization, allowing you to seek through huge 4K videos instantly without waiting for a full download.
+* **Automatic Visual Previews**
+    * Auto-generates high-quality thumbnails for every video in your library using FFmpeg.
+    * Smart "Processing" badges in the UI so you know exactly when a video is being optimized.
+* **Production-Grade Stability**
+    * **Concurrency Guard:** A built-in traffic controller that prevents FFmpeg from eating 100% of your CPU by processing only one video at a time.
+    * **Rate Limiting:** Protects your server from being spammed by too many rapid requests.
+    * **Helmet.js Integration:** Hardens your streaming headers against common web vulnerabilities.
+* **Real-Time Sync and Search**
+    * **8-Second Heartbeat:** The library automatically syncs with your /media folder every 8 seconds—no manual refresh needed.
+    * **Instant Search:** Filter through hundreds of files in real-time as you type.
+    * **Activity Log:** A built-in terminal-style logger in the UI to track new files, deletions, and processing status.
+* **Performance Optimized**
+    * **Gzip Compression:** All metadata and API responses are compressed to save mobile data.
+    * **Byte-Range Streaming:** Supports "Partial Content" (206) for smooth seeking and resuming on Android/iOS players.
+    
 # Running the software as a whole
 ## Dependencies
 - Node.js (v24.15)
