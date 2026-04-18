@@ -18,6 +18,8 @@ vlclone currently has:
 - NPM (v11.12.1)
 - Express
 - nodemon
+- FFmpeg
+
 To install them, simply type `npm install`.
 
 ## REMEMBER, YOUR DEVICES MUST CONNECT INTO THE SAME WI-FI TO ACCESS THE FILES!!!
