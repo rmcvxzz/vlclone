@@ -2,7 +2,8 @@
 Somewhat working self-hosted streaming service using Node.js
 
 This is considered as a coding practice.
-
+![ze paige](./something/PAIGE!!!!.png)
+![another paige](./something/PAIGE!!!! 2.jpg)
 # Running
 ## Dependencies
 - Node.js (v24.15)
