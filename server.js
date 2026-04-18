@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const app = express();
 const PORT = 3000;
+const VER = 1.1;
 
 const MEDIA_DIR = path.join(__dirname, 'media');
 
@@ -85,6 +86,6 @@ app.get('/stream/:filename', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`vlclone is live at http://localhost:${PORT}`);
-    console.log(`scan the media folder : ${MEDIA_DIR}`);
+    console.log(`vlclone ${VER} is live at http://localhost:${PORT}`);
+    console.log(`current media folder : ${MEDIA_DIR}`);
 });
