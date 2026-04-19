@@ -4,8 +4,8 @@ Somewhat simple and working cross-platform self-hosted media streaming service u
 This is considered as a coding practice.
 ![ze paige](./something/PAIGE!!!!.png)
 ![ze paige](./something/PAIGE!!!!2.png)
-
-(you can view more demos [here](./something))
+![zomething](./something/Mov%20demo.png)
+(you can view the demonstrations [here](./something))
 # What are the features?
 vlclone has evolved from a simple file lister into a smart media pipeline:
 
@@ -80,12 +80,19 @@ const PORT = 3000; // <- change the port to anything you like (as long as its nu
 
 # FAQS
 ***Q: Why use nodemon?***
+
 ***A: Because it's simply great. As a developer, nodemon is the first package i install on every node.js project i have. Read [about it here.](https://nodemon.io/)***
 
+
 ***Q: Why node.js?***
+
 ***A: Simple. It's already a great library to make servers.*** 
 
+
 ***Q: Where did the name come from?***
+
 ***A: vlclone is VLC + Clone + full lowercase. vlclone was originally made to be a generic VLC clone using node.js.***
+
+
 # Getting a bug?
 Report the issue [here.](https://github.com/rmcvxzz/vlclone/issues)
