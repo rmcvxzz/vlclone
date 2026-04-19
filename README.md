@@ -43,6 +43,8 @@ If you're running ***__vlclone__*** on your PC and want to access your files on 
 However, if you're on Linux (like me as of writing this), type `hostname -I` on the Terminal.
 BUT, HOWEVER, if you're on MacOS, type `ipconfig getifaddr en0` (if using Wi-Fi) or `ipconfig getifaddr en0` (if using LAN) on the Terminal.
 
+Do note; vlclone works better on wifi.
+
 ## Adding medias
 Simply put your medias onto the media folder.
 Supported medias (as of 04/18/2026:):
@@ -67,20 +69,14 @@ Simply go to localhost:3000. You can also change the port in `server.js` at line
 const PORT = 3000; // <- change the port to anything you like (as long as its numbers)
 ```
 
-If you're running ***__vlclone__*** on your PC and want to access your files on mobile or other hardwares, type `ipconfig` to your CMD (Windows) and SPECIFICALLY find your Wi-Fi's/LAN's IPV4 address, then copy and paste that to your other hardware's url tab.
-
-However, if you're on Linux (like me as of writing this), type `hostname -I` on the Terminal and do the same thing as Windows.
-
-BUT, HOWEVER, if you're on MacOS, type `ipconfig getifaddr en0` (if using Wi-Fi) or `ipconfig getifaddr en0` (if using LAN) on the Terminal and do the same thing on Windows.
-
 # FAQS
 ***Q: Why use nodemon?***
-***A: You should already know this. nodemon allows you to restart the server INSTANTLY after a change on the root of vlclone.***
+***A: Because it's simply great. As a developer, nodemon is the first package i install on every node.js project i have. Read [about it here.](https://nodemon.io/)
 
 ***Q: Why node.js?***
 ***A: Simple. It's already a great library to make servers.*** 
 
 ***Q: Where did the name come from?***
-***A: vlclone is VLC + Clone + full lowercase. vlclone was originally made to be a vlc clone using node.js.***
+***A: vlclone is VLC + Clone + full lowercase. vlclone was originally made to be a generic VLC clone using node.js.***
 # Getting a bug?
 Report the issue [here.](https://github.com/rmcvxzz/vlclone/issues)
