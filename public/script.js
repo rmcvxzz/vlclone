@@ -117,7 +117,7 @@ function filterFiles() {
 }
 
 function playMedia(file) {
-    const ext = file.stream.split('.').pop().toLowerCase();
+    const ext = file.stream.split('?')[0].split('.').pop().toLowerCase();
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext);
 
     // Stop browser from breaking if video isn't ready
