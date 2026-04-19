@@ -183,4 +183,8 @@ app.get('/stream/:filename', (req, res) => {
 app.listen(PORT, () => {
     console.log(`\x1b[32m%s\x1b[0m`, `--- vlclone v${VER} ---`);
     console.log(`serving media at: http://localhost:${PORT}`);
+    console.log(`media path: ${MEDIA_DIR};`);
+    console.log(`thumbnails path: ${THUMBS_DIR}`);
+    console.log(`converted path: ${CONVERT_DIR}`);
+    
 });
