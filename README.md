@@ -35,7 +35,6 @@ vlclone has evolved from a simple file lister into a smart media pipeline:
 - nodemon
 - FFmpeg
 - Helmet.js
-- 
 To install them, simply type `npm install`.
 
 ## REMEMBER, YOUR DEVICES MUST CONNECT INTO THE SAME WI-FI TO ACCESS THE FILES!!!
