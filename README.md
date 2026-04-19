@@ -71,7 +71,7 @@ const PORT = 3000; // <- change the port to anything you like (as long as its nu
 
 # FAQS
 ***Q: Why use nodemon?***
-***A: Because it's simply great. As a developer, nodemon is the first package i install on every node.js project i have. Read [about it here.](https://nodemon.io/)
+***A: Because it's simply great. As a developer, nodemon is the first package i install on every node.js project i have. Read [about it here.](https://nodemon.io/)***
 
 ***Q: Why node.js?***
 ***A: Simple. It's already a great library to make servers.*** 
