@@ -1,5 +1,5 @@
 # vlclone
-Somewhat working self-hosted streaming service using Node.js
+Somewhat simple and working cross-platform self-hosted media streaming service using Node.js
 
 This is considered as a coding practice.
 ![ze paige](./something/PAIGE!!!!.png)
@@ -9,23 +9,23 @@ This is considered as a coding practice.
 # What are the features?
 vlclone has evolved from a simple file lister into a smart media pipeline:
 
-* **Smart Transcoding Engine (v1.4)**
-    * Automatically detects heavy desktop formats (.mov, .mkv) and optimizes them into mobile-friendly H.264 MP4s in the background.
-    * Uses Fast-Start (moov atom) optimization, allowing you to seek through huge 4K videos instantly without waiting for a full download.
-* **Automatic Visual Previews**
-    * Auto-generates high-quality thumbnails for every video in your library using FFmpeg.
-    * Smart "Processing" badges in the UI so you know exactly when a video is being optimized.
-* **Production-Grade Stability**
-    * **Concurrency Guard:** A built-in traffic controller that prevents FFmpeg from eating 100% of your CPU by processing only one video at a time.
-    * **Rate Limiting:** Protects your server from being spammed by too many rapid requests.
-    * **Helmet.js Integration:** Hardens your streaming headers against common web vulnerabilities.
-* **Real-Time Sync and Search**
-    * **8-Second Heartbeat:** The library automatically syncs with your /media folder every 8 seconds—no manual refresh needed.
-    * **Instant Search:** Filter through hundreds of files in real-time as you type.
-    * **Activity Log:** A built-in terminal-style logger in the UI to track new files, deletions, and processing status.
-* **Performance Optimized**
-    * **Gzip Compression:** All metadata and API responses are compressed to save mobile data.
-    * **Byte-Range Streaming:** Supports "Partial Content" (206) for smooth seeking and resuming on Android/iOS players.
+* **Smart transcoding engine**
+    * Automatically detects heavy desktop formats (.mov, .mkv) and optimizes them into mobile-friendly H.264 MP4s in the background
+    * Uses Fast-Start (moov atom) optimization, allowing you to seek through huge 4K videos instantly without waiting for a full download
+* **Automatic visual previews**
+    * Auto-generates high-quality thumbnails for every video in your library using FFmpeg
+    * Smart "Processing" badges in the UI so you know exactly when a video is being optimized
+* **Production-grade stability**
+    * **Concurrency guard** A built-in traffic controller that prevents FFmpeg from eating 100% of your CPU by processing only one video at a time
+    * **Rate limiting:** Protects your server from being spammed by too many rapid requests
+    * **Helmet.js integration:** Hardens your streaming headers against common web vulnerabilities
+* **Real-time sync and search**
+    * **8-Second auto refresh** The library automatically syncs with the `/media` folder every 8 seconds
+    * **Instant search** Filter through hundreds of files in real-time as you type
+    * **Activity log** A built-in terminal-style logger in the UI to track new files, deletions, and processing status
+* **Performance optimized**
+    * **Gzip compression:** All metadata and API responses are compressed to save mobile data
+    * **Byte-Range Streaming:** Supports "Partial Content" (206) for smooth seeking and resuming on Android/iOS players
     
 # Running the software as a whole
 ## Dependencies
@@ -35,12 +35,20 @@ vlclone has evolved from a simple file lister into a smart media pipeline:
 - nodemon
 - FFmpeg
 - Helmet.js
-To install them, simply type `npm install`.
 
 ## REMEMBER, YOUR DEVICES MUST CONNECT INTO THE SAME WI-FI TO ACCESS THE FILES!!!
+#### Unless you're using localtunnel, ngrok or pinggy.
 If you're running ***__vlclone__*** on your PC and want to access your files on mobile or other hardwares, type `ipconfig` to your CMD (Windows) and SPECIFICALLY find your Wi-Fi's/LAN's IPV4 address, then copy and paste that to your other hardware's url tab.
+
+
 However, if you're on Linux (like me as of writing this), type `hostname -I` on the Terminal.
+
+
 BUT, HOWEVER, if you're on MacOS, type `ipconfig getifaddr en0` (if using Wi-Fi) or `ipconfig getifaddr en0` (if using LAN) on the Terminal.
+
+
+IF YOU'RE SOMEHOW ON ANDROID (using termux), just use ifconfig.
+
 
 Do note; vlclone works better on wifi.
 
@@ -57,9 +65,11 @@ Supported medias (as of 04/18/2026:):
 - .jpeg
 - .gif
 - .webp
+- .mov (with ffmpeg transcoder)
+- .mkv (with ffmpeg transcoder)
 ## Compiling
-Here's the fun part. You dont use `node`. Instead, you use `npm run stream`.
-It's a pre-added script on package.json to make it easy to compile.
+Here's the fun part. You dont use `node`. Instead, you use `npm run stream`
+It's a pre-added script on package.json to make it easy to compile
 
 ## Seeing the media
 Simply go to localhost:3000. You can also change the port in `server.js` at line 9:
