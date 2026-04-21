@@ -5,30 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>vlclone - self-hosted streaming server</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
+    <div class="header-bar">
+        <h1>vlclone <span class="version-badge">v1.5.0</span></h1>
+        
+        <div id="upload-section">
+            <input type="file" id="fileInput" style="display:none" onchange="handleUpload(event)">
+            <button class="btn-upload" onclick="document.getElementById('fileInput').click()">📤 Upload Media</button>
+        </div>
+    </div>
+
     <center>
-        <h1>vlclone</h1>
         <div id="viewer-container">
-            <video id="videoPlayer" controls></video>
-            <img id="imageViewer" src="" alt="preview">
-            <h3 id="nowPlaying">Select a file</h3>
+            <video id="videoPlayer" controls playsinline></video>
+            <img id="imageViewer" src="" alt="preview" style="display:none;">
+            
+            <div id="metadata-overlay">
+                <h3 id="nowPlaying">Select a file from your library</h3>
+                <div id="demo-stats"></div> </div>
         </div>
 
         <div id="search-container">
-            <input type="text" id="searchInput" placeholder="Search your media..." onkeyup="filterFiles()">
+            <input type="text" id="searchInput" placeholder="Search your media (TF2 demos, movies, music...)" onkeyup="filterFiles()">
         </div>
     </center>
 
+    <div id="jobs-container"></div>
+
     <div id="library"></div>
+
     <div id="log-container">
         <div id="activityLog"></div>
     </div>
-    
-    <video id="videoPlayer" controls playsinline preload="metadata">
-    <source id="videoSource" src="" type="video/mp4">
-    Your browser does not support the video tag.
-    </video>
 
     <script src="script.js"></script>
 </body>

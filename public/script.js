@@ -4,13 +4,15 @@ const library = document.getElementById('library');
 const nowPlaying = document.getElementById('nowPlaying');
 const searchInput = document.getElementById('searchInput');
 const activityLog = document.getElementById('activityLog');
+const jobsContainer = document.getElementById('jobs-container');
+const demoStats = document.getElementById('demo-stats');
 
-let allFiles = []; // Now holds objects, not strings
+let allFiles = []; 
+let hls = null;
 
-// 1. UTILITY: Timestamp for logs
 function getTimestamp() {
     const now = new Date();
-    return `[${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}]`;
+    return `[${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}]`;
 }
 
 function addLog(message, type) {
@@ -20,99 +22,176 @@ function addLog(message, type) {
     activityLog.prepend(entry);
 }
 
-// 2. FETCH & SYNC (Upgraded to handle Objects)
+async function handleUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    addLog(`Uploading: ${file.name}...`, 'log-info');
+
+    try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.message) {
+            addLog(`Upload Complete!`, 'log-success');
+            fetchFiles();
+        }
+    } catch (err) {
+        addLog(`Upload Failed: ${err.message}`, 'log-deleted');
+    }
+}
+
+function renderJobs(files) {
+    const activeJobs = files.filter(f => f.job);
+    jobsContainer.innerHTML = "";
+    if (activeJobs.length > 0) {
+        activeJobs.forEach(file => {
+            const jobCard = document.createElement('div');
+            jobCard.className = 'job-card';
+            jobCard.innerHTML = `
+                <div class="job-info">
+                    <span>⚙️ ${file.job.status}: <strong>${file.name}</strong></span>
+                    <span>${file.job.progress}%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: ${file.job.progress}%"></div>
+                </div>
+            `;
+            jobsContainer.appendChild(jobCard);
+        });
+    }
+}
+
 async function fetchFiles() {
     try {
         const res = await fetch('/api/files');
-        const newFiles = await res.json(); // Array of objects
+        const newFiles = await res.json();
         
-        // Extract stream URLs to use as unique IDs for comparison
-        const oldPaths = allFiles.map(f => f.stream);
-        const newPaths = newFiles.map(f => f.stream);
-
-        // Find added and deleted files
-        const added = newFiles.filter(x => !oldPaths.includes(x.stream));
-        const deleted = allFiles.filter(x => !newPaths.includes(x.stream));
-
-        if (allFiles.length > 0) {
-            added.forEach(f => addLog(`New file found: ${f.name}`, 'log-new'));
-            deleted.forEach(f => addLog(`A file was deleted: ${f.name}`, 'log-deleted'));
-        }
-
-        // UX WIN: Detect if a file finished converting in the background
-        let readyChanged = false;
-        newFiles.forEach(newF => {
-            const oldF = allFiles.find(o => o.stream === newF.stream);
-            if (oldF && oldF.ready !== newF.ready) {
-                readyChanged = true;
-                if (newF.ready) addLog(`Finished processing: ${newF.name}`, 'log-new');
-            }
+        const oldNames = allFiles.map(f => f.name);
+        newFiles.forEach(f => {
+            if (!oldNames.includes(f.name)) addLog(`New discovery: ${f.name}`, 'log-new');
         });
 
-        // Re-render if anything changed
-        if (added.length > 0 || deleted.length > 0 || readyChanged || allFiles.length === 0) {
-            allFiles = newFiles;
-            if (searchInput.value.trim() === "") {
-                renderLibrary(allFiles);
-            }
+        allFiles = newFiles;
+        renderJobs(allFiles);
+        
+        if (searchInput.value.trim() === "") {
+            renderLibrary(allFiles);
         }
     } catch (err) {
         console.error("Sync error:", err);
     }
 }
 
-// 3. RENDER (Upgraded to read object properties)
 function renderLibrary(files) {
     library.innerHTML = "";
     if (files.length === 0) {
-        library.innerHTML = "<p>No media found.</p>";
+        library.innerHTML = "<p>Your media folder is empty.</p>";
         return;
     }
 
     files.forEach(file => {
-        // Extract extension from the stream path
-        const ext = file.stream.split('.').pop().toLowerCase();
-        const isVideo = ['mp4', 'mkv', 'mov'].includes(ext);
-        const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext);
-        
         const card = document.createElement('div');
-        card.className = 'file-card';
-        // Add a visual cue if still processing
-        if (!file.ready) card.style.opacity = '0.6';
+        card.className = `file-card ${file.job ? 'processing' : ''}`;
         
-        let previewHtml = '';
-        if (isVideo) {
-            // Use the backend-provided thumbnail path
-            previewHtml = `<img src="${file.thumbnail}" onerror="this.src='https://placehold.co/320x180/1e1e1e/00d1ff?text=Generating...'" alt="thumb">`;
-            
-            // Show a "Processing" badge if it's not ready yet
-            if (!file.ready) {
-                previewHtml += `<div style="position: absolute; top: 5px; right: 5px; background: #ff4757; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Processing</div>`;
-            }
-        } else if (isImage) {
-            previewHtml = `<img src="${file.stream}" alt="thumb">`;
-        } else {
-            previewHtml = `<div class="no-thumb">🎵</div>`; // Music icon
-        }
+        let thumb = file.thumbnail || 'https://placehold.co/320x180/1e1e1e/00d1ff?text=🎵+Audio';
 
         card.innerHTML = `
-            <div style="position: relative;">${previewHtml}</div>
+            <div class="thumb-wrapper">
+                <img src="${thumb}" alt="thumb">
+                ${file.isHLS ? '<div class="hls-badge">HLS</div>' : ''}
+                ${file.job ? `<div class="job-badge">${file.job.progress}%</div>` : ''}
+            </div>
             <div class="file-info">
                 <span class="file-name">${file.name}</span>
             </div>
         `;
         
-        // Pass the entire object to playMedia
         card.onclick = () => playMedia(file);
         library.appendChild(card);
     });
 }
 
-// 4. SEARCH & PLAY
+function playMedia(file) {
+    if (file.job) return;
+
+    imageViewer.style.display = 'none';
+    videoPlayer.style.display = 'block';
+    demoStats.innerHTML = ''; 
+    
+    if (hls) {
+        hls.destroy();
+        hls = null;
+    }
+
+    if (file.type === 'image') {
+        videoPlayer.pause();
+        videoPlayer.style.display = 'none';
+        imageViewer.src = file.stream;
+        imageViewer.style.display = 'block';
+    } 
+    else if (file.isHLS) {
+        if (Hls.isSupported()) {
+            hls = new Hls();
+            hls.loadSource(file.stream);
+            hls.attachMedia(videoPlayer);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => videoPlayer.play());
+        } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+            videoPlayer.src = file.stream;
+            videoPlayer.play();
+        }
+    } 
+    else {
+        videoPlayer.src = file.stream;
+        videoPlayer.play();
+    }
+
+    if (file.meta) {
+        // Standard Header Stats
+        let statsHTML = `
+            <div class="stats-badge">Map: ${file.meta.map}</div>
+            <div class="stats-badge">Players: ${file.meta.players}</div>
+            <div class="stats-badge">${Math.floor(file.meta.duration / 60)}m ${Math.floor(file.meta.duration % 60)}s</div>
+        `;
+
+        // If it's a demo, build the Deep Logs UI
+        if (file.type === 'demo') {
+            statsHTML += `<div class="demo-deep-logs" style="margin-top: 15px; display: flex; gap: 20px; text-align: left; max-height: 300px;">`;
+            
+            // Render Chat Log
+            if (file.meta.chat && file.meta.chat.length > 0) {
+                statsHTML += `<div class="chat-log" style="flex: 1; background: #111; padding: 10px; border-radius: 8px; overflow-y: auto;">`;
+                statsHTML += `<h4 style="color: #00d1ff; margin-top: 0;">Match Chat</h4>`;
+                file.meta.chat.forEach(msg => {
+                    statsHTML += `<p style="margin: 2px 0; font-size: 0.85em;"><strong>${msg.from}:</strong> ${msg.text}</p>`;
+                });
+                statsHTML += `</div>`;
+            }
+
+            // Render Bookmarks (Crucial for Frag Movies)
+            if (file.meta.bookmarks && file.meta.bookmarks.length > 0) {
+                statsHTML += `<div class="bookmark-log" style="flex: 1; background: #111; padding: 10px; border-radius: 8px; overflow-y: auto;">`;
+                statsHTML += `<h4 style="color: #ffaa00; margin-top: 0;">Bookmarks</h4>`;
+                file.meta.bookmarks.forEach(bm => {
+                    statsHTML += `<p style="margin: 2px 0; font-size: 0.85em;">Tick <strong>${bm.tick}</strong>: ${bm.value}</p>`;
+                });
+                statsHTML += `</div>`;
+            }
+
+            statsHTML += `</div>`; // Close deep logs container
+        }
+
+        demoStats.innerHTML = statsHTML;
+    }
+
+    nowPlaying.innerText = `Now Playing: ${file.name}`;
+}
+
 function filterFiles() {
     const query = searchInput.value.toLowerCase();
-    // Search based on file.name instead of the raw string
-    const filtered = allFiles.filter(file => file.name.toLowerCase().includes(query));
+    const filtered = allFiles.filter(f => f.name.toLowerCase().includes(query));
     renderLibrary(filtered);
 }
 
@@ -149,3 +228,6 @@ searchInput.addEventListener('input', filterFiles);
 // Start
 fetchFiles();
 setInterval(fetchFiles, 8000);
+fetchFiles();
+setInterval(fetchFiles, 3000); 
+searchInput.addEventListener('input', filterFiles);
