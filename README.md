@@ -49,13 +49,17 @@ See [COMPILING.md for the instructions.](./compiling.md)
 
 # FAQS
 ***Q: Why use nodemon?***
-***A: You should already know this. nodemon allows you to restart the server INSTANTLY after a change on the root of vlclone. the new ***
+
+***A: You should already know this. nodemon allows you to restart the server INSTANTLY after a change on the root of vlclone. the new watch flag sucks.***
 
 ***Q: Why node.js?***
+
 ***A: Simple. It's already a great library to make servers.*** 
 
 ***Q: Where did the name come from?***
+
 ***A: vlclone is VLC + Clone + full lowercase. vlclone was originally made to be a vlc clone using node.js.***
-s
+
+
 # Getting a bug?
 Report the issue [here.](https://github.com/rmcvxzz/vlclone/issues)
