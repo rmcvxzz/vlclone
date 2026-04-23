@@ -149,18 +149,15 @@ function playMedia(file) {
     }
 
     if (file.meta) {
-        // Standard Header Stats
         let statsHTML = `
             <div class="stats-badge">Map: ${file.meta.map}</div>
             <div class="stats-badge">Players: ${file.meta.players}</div>
             <div class="stats-badge">${Math.floor(file.meta.duration / 60)}m ${Math.floor(file.meta.duration % 60)}s</div>
         `;
 
-        // If it's a demo, build the Deep Logs UI
         if (file.type === 'demo') {
             statsHTML += `<div class="demo-deep-logs" style="margin-top: 15px; display: flex; gap: 20px; text-align: left; max-height: 300px;">`;
             
-            // Render Chat Log
             if (file.meta.chat && file.meta.chat.length > 0) {
                 statsHTML += `<div class="chat-log" style="flex: 1; background: #111; padding: 10px; border-radius: 8px; overflow-y: auto;">`;
                 statsHTML += `<h4 style="color: #00d1ff; margin-top: 0;">Match Chat</h4>`;
@@ -170,7 +167,6 @@ function playMedia(file) {
                 statsHTML += `</div>`;
             }
 
-            // Render Bookmarks (Crucial for Frag Movies)
             if (file.meta.bookmarks && file.meta.bookmarks.length > 0) {
                 statsHTML += `<div class="bookmark-log" style="flex: 1; background: #111; padding: 10px; border-radius: 8px; overflow-y: auto;">`;
                 statsHTML += `<h4 style="color: #ffaa00; margin-top: 0;">Bookmarks</h4>`;
@@ -180,7 +176,7 @@ function playMedia(file) {
                 statsHTML += `</div>`;
             }
 
-            statsHTML += `</div>`; // Close deep logs container
+            statsHTML += `</div>`; 
         }
 
         demoStats.innerHTML = statsHTML;
@@ -199,7 +195,6 @@ function playMedia(file) {
     const ext = file.stream.split('?')[0].split('.').pop().toLowerCase();
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext);
 
-    // Stop browser from breaking if video isn't ready
     if (!file.ready && !isImage) {
         alert(`"${file.name}" is currently being optimized for playback. Please wait a moment!`);
         return;
@@ -222,10 +217,8 @@ function playMedia(file) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Event Listeners
 searchInput.addEventListener('input', filterFiles);
 
-// Start
 fetchFiles();
 setInterval(fetchFiles, 8000);
 fetchFiles();

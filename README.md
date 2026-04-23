@@ -32,7 +32,7 @@ vlclone has evolved from a simple file lister into a smart media pipeline:
 
 ## Adding medias
 Simply put your medias onto the media folder.
-Supported medias (as of 04/18/2026:):
+Supported medias (as of 04/21/2026:):
 - .mp4
 - .webm
 - .ogg
